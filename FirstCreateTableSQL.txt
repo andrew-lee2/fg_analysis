@@ -1,29 +1,31 @@
 -- Table: public.spreadweather
 
+DROP TABLE IF EXISTS public.spreadweather;
+
 CREATE TABLE public.spreadweather
-(
-  "HOME" character varying NOT NULL,
-  "Date" character(8) NOT NULL,
-  "InOut" character varying,
-  "GrassTurf" character varying,
-  "Spread" double precision,
-  "OULine" double precision,
-  "OUActual" double precision,
-  "Temperature" double precision,
-  "RelHumidity" double precision,
-  "Windspeed" double precision,
-  "WindChill" double precision,
-  "Away" character varying
-)
-WITH (
-  OIDS=FALSE
+	(
+	  "HOME" character varying NOT NULL,
+	  "Date" character(8) NOT NULL,
+	  "InOut" character varying,
+	  "GrassTurf" character varying,
+	  "Spread" double precision,
+	  "OULine" double precision,
+	  "OUActual" double precision,
+	  "Temperature" double precision,
+	  "RelHumidity" double precision,
+	  "Windspeed" double precision,
+	  "WindChill" double precision,
+	  "Away" character varying
+	)
+	WITH (
+	  OIDS=FALSE
 );
 ALTER TABLE public.spreadweather
   OWNER TO nfldb;
   
 -- Table: gamelocations
 
--- DROP TABLE gamelocations;
+DROP TABLE IF EXISTS public.gamelocations;
 
 CREATE TABLE gamelocations
 (
@@ -33,16 +35,16 @@ CREATE TABLE gamelocations
   lat numeric,
   lon numeric,
   zip character varying
-)
+);
 
 
 -- Table: home_locations
 
--- DROP TABLE home_locations;
+DROP TABLE IF EXISTS public.home_locations;
 
 CREATE TABLE home_locations
 (
   locid character varying,
   team character varying(3),
   year integer
-)  
+);
