@@ -22,6 +22,9 @@ CREATE TABLE public.spreadweather
 );
 ALTER TABLE public.spreadweather
   OWNER TO nfldb;
+
+--import spreadweather.csv from path (need to change for own files)
+COPY public.spreadweather FROM 'E:\Users\Andrew\git_repos\fg_analysis\spreadweather.csv' DELIMITER ',' CSV HEADER;
   
 -- Table: gamelocations
 
@@ -37,6 +40,8 @@ CREATE TABLE gamelocations
   zip character varying
 );
 
+--import gamelocations
+COPY public.gamelocations FROM 'E:\Users\Andrew\git_repos\fg_analysis\gamelocations.csv' DELIMITER ',' CSV HEADER;
 
 -- Table: home_locations
 
@@ -48,3 +53,6 @@ CREATE TABLE home_locations
   team character varying(3),
   year integer
 );
+
+--import home_locations
+COPY public.home_locations FROM 'E:\Users\Andrew\git_repos\fg_analysis\home_locations.csv' DELIMITER ',' CSV HEADER;
