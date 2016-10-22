@@ -1,0 +1,713 @@
+--combine team game data
+
+--new penalty team field on play
+
+DROP TABLE IF EXISTS play_pen_update;
+
+CREATE TABLE play_pen_update AS (
+    SELECT *,
+        (CASE
+            WHEN position('PENALTY on ' in description) > 0
+                THEN substring(substring(description FROM position('PENALTY on ' in description) + 11 for 3) FROM '[a-zA-Z]+')
+        END) AS penalty_team
+    FROM play
+);
+
+--for play_player:
+DROP TABLE IF EXISTS play_player_game_agg;
+
+CREATE TABLE play_player_game_agg AS (
+    SELECT gsis_id AS gsis_id_t4,
+        team AS team,
+        SUM(defense_ast) AS defense_ast,
+        SUM(defense_ffum) AS defense_ffum,
+        SUM(defense_fgblk) AS defense_fgblk,
+        SUM(defense_frec) AS defense_frec,
+        SUM(defense_frec_tds) AS defense_frec_tds,
+        SUM(defense_frec_yds) AS defense_frec_yds,
+        SUM(defense_int) AS defense_int,
+        SUM(defense_int_tds) AS defense_int_tds,
+        SUM(defense_int_yds) AS defense_int_yds,
+        SUM(defense_misc_tds) AS defense_misc_tds,
+        SUM(defense_misc_yds) AS defense_misc_yds,
+        SUM(defense_pass_def) AS defense_pass_def,
+        SUM(defense_puntblk) AS defense_puntblk,
+        SUM(defense_qbhit) AS defense_qbhit,
+        SUM(defense_safe) AS defense_safe,
+        SUM(defense_sk) AS defense_sk,
+        SUM(defense_sk_yds) AS defense_sk_yds,
+        SUM(defense_tkl) AS defense_tkl,
+        SUM(defense_tkl_loss) AS defense_tkl_loss,
+        SUM(defense_tkl_primary) AS defense_tkl_primary,
+        SUM(defense_xpblk) AS defense_xpblk,
+        SUM(defense_frec_tds + defense_int_tds + defense_misc_tds) AS defense_tds,
+        SUM(fumbles_forced) AS fumbles_forced,
+        SUM(fumbles_lost) AS fumbles_lost,
+        SUM(fumbles_notforced) AS fumbles_notforced,
+        SUM(fumbles_oob) AS fumbles_oob,
+        SUM(fumbles_rec) AS fumbles_rec,
+        SUM(fumbles_rec_tds) AS fumbles_rec_tds,
+        SUM(fumbles_rec_yds) AS fumbles_rec_yds,
+        SUM(fumbles_tot) AS fumbles_tot,
+        SUM(kicking_all_yds) AS kicking_all_yds,
+        SUM(kicking_downed) AS kicking_downed,
+        SUM(kicking_fga) AS kicking_fga,
+        SUM(kicking_fgb) AS kicking_fgb,
+        SUM(kicking_fgm) AS kicking_fgm,
+        SUM(kicking_fgm_yds) AS kicking_fgm_yds,
+        SUM(kicking_fgmissed) AS kicking_fgmissed,
+        SUM(kicking_fgmissed_yds) AS kicking_fgmissed_yds,
+        SUM(kicking_i20) AS kicking_i20,
+        SUM(kicking_rec) AS kicking_rec,
+        SUM(kicking_tot) AS kicking_tot,
+        SUM(kicking_touchback) AS kicking_touchback,
+        SUM(kicking_xpa) AS kicking_xpa,
+        SUM(kicking_xpb) AS kicking_xpb,
+        SUM(kicking_xpmade) AS kicking_xpmade,
+        SUM(kicking_xpmissed) AS kicking_xpmissed,
+        SUM(kicking_yds) AS kicking_yds,
+        SUM(kickret_fair) AS kickret_fair,
+        SUM(kickret_oob) AS kickret_oob,
+        SUM(kickret_ret) AS kickret_ret,
+        SUM(kickret_tds) AS kickret_tds,
+        SUM(kickret_touchback) AS kickret_touchback,
+        SUM(kickret_yds) AS kickret_yds,
+        SUM(passing_att) AS passing_att,
+        SUM(passing_cmp) AS passing_cmp,
+        SUM(passing_cmp_air_yds) AS passing_cmp_air_yds,
+        SUM(passing_incmp) AS passing_incmp,
+        SUM(passing_int) AS passing_int,
+        SUM(passing_sk) AS passing_sk,
+        SUM(passing_sk_yds) AS passing_sk_yds,
+        SUM(passing_tds) AS passing_tds,
+        SUM(passing_twopta) AS passing_twopta,
+        SUM(passing_twoptm) AS passing_twoptm,
+        SUM(passing_twoptmissed) AS passing_twoptmissed,
+        SUM(passing_yds) AS passing_yds,
+        SUM(punting_blk) AS punting_blk,
+        SUM(punting_i20) AS punting_i20,
+        SUM(punting_tot) AS punting_tot,
+        SUM(punting_touchback) AS punting_touchback,
+        SUM(punting_yds) AS punting_yds,
+        SUM(puntret_downed) AS puntret_downed,
+        SUM(puntret_fair) AS puntret_fair,
+        SUM(puntret_oob) AS puntret_oob,
+        SUM(puntret_tds) AS puntret_tds,
+        SUM(puntret_tot) AS puntret_tot,
+        SUM(puntret_touchback) AS puntret_touchback,
+        SUM(puntret_yds) AS puntret_yds,
+        SUM(receiving_rec) AS receiving_rec,
+        SUM(receiving_tar) AS receiving_tar,
+        SUM(receiving_tds) AS receiving_tds,
+        SUM(receiving_twopta) AS receiving_twopta,
+        SUM(receiving_twoptm) AS receiving_twoptm,
+        SUM(receiving_twoptmissed) AS receiving_twoptmissed,
+        SUM(receiving_yac_yds) AS receiving_yac_yds,
+        SUM(receiving_yds) AS receiving_yds,
+        SUM(rushing_att) AS rushing_att,
+        SUM(rushing_loss) AS rushing_loss,
+        SUM(rushing_loss_yds) AS rushing_loss_yds,
+        SUM(rushing_tds) AS rushing_tds,
+        SUM(rushing_twopta) AS rushing_twopta,
+        SUM(rushing_twoptm) AS rushing_twoptm,
+        SUM(rushing_twoptmissed) AS rushing_twoptmissed,
+        SUM(rushing_yds) AS rushing_yds,
+        SUM(passing_yds + rushing_yds + receiving_yds + fumbles_rec_yds) AS offense_yds,
+        SUM(passing_tds + receiving_tds + rushing_tds + fumbles_rec_tds) AS offense_tds,
+        SUM(passing_int + fumbles_lost) AS tot_turnovers,
+        COUNT(gsis_id) AS play_count
+        FROM play_player GROUP BY gsis_id, team
+);
+
+--for drive (mising pos_time):
+DROP TABLE IF EXISTS drive_game_agg;
+
+CREATE TABLE drive_game_agg AS (
+    SELECT gsis_id AS gsis_id_t3,
+        pos_team AS pos_team_t3,
+        AVG((start_field).pos::int) AS start_field_avg,
+        AVG((end_field).pos::int) AS end_field_avg,
+        SUM(first_downs) AS first_downs_tot,
+        STRING_AGG(result, ',' ORDER BY drive_id) AS results_all,
+        -- SUM(penalty_yards) AS penalty_yards,
+        SUM(yards_gained) AS yards_gained
+        -- SUM(play_count) AS play_count
+
+    FROM drive
+    GROUP BY gsis_id, pos_team
+);
+
+--for play:
+DROP TABLE IF EXISTS play_temp1;
+
+CREATE TABLE play_temp1 AS (
+    SELECT gsis_id AS gsis_id_t2,
+        pos_team AS pos_team,
+        AVG(down) AS down_avg,
+        AVG(yards_to_go) AS yards_to_go_avg,
+        SUM(first_down) AS first_down_sum,
+        SUM(fourth_down_att) AS fourth_down_att_sum,
+        SUM(fourth_down_conv) AS fourth_down_conv_sum,
+        SUM(fourth_down_failed) AS fourth_down_failed_sum,
+        SUM(passing_first_down) AS passing_first_down_sum,
+        SUM(rushing_first_down) AS rushing_first_down_sum,
+        SUM(third_down_att) AS third_down_att_sum,
+        SUM(third_down_conv) AS third_down_conv_sum,
+        SUM(third_down_failed) AS third_down_failed_sum,
+        SUM(timeout) AS timeouts_used,
+        SUM(xp_aborted) AS xpaborted_sum
+
+    FROM play
+    GROUP BY gsis_id, pos_team
+);
+
+DROP TABLE IF EXISTS play_temp2;
+
+CREATE TABLE play_temp2 AS (
+    SELECT gsis_id AS gsis_id,
+        penalty_team AS penalty_team,
+        SUM(penalty) AS off_penalty_sum,
+        SUM(penalty_first_down) AS off_penalty_first_down_sum,
+        SUM(penalty_yds) AS off_penalty_yds_sum
+
+    FROM play_pen_update
+    WHERE penalty_team = pos_team
+    GROUP BY gsis_id, penalty_team
+);
+
+DROP TABLE IF EXISTS play_temp3;
+
+CREATE TABLE play_temp3 AS (
+    SELECT gsis_id AS gsis_id,
+        penalty_team AS penalty_team,
+        SUM(penalty) AS def_penalty_sum,
+        SUM(penalty_first_down) AS def_penalty_first_down_sum,
+        SUM(penalty_yds) AS def_penalty_yds_sum
+
+    FROM play_pen_update
+    WHERE penalty_team <> pos_team
+    GROUP BY gsis_id, penalty_team
+);
+
+
+DROP TABLE IF EXISTS play_game_agg;
+
+CREATE TABLE play_game_agg AS (
+SELECT  x.gsis_id_t2,
+        x.pos_team,
+        COALESCE(y.penalty_team,x.pos_team) AS penalty_team,
+        x.down_avg,
+        x.yards_to_go_avg,
+        x.first_down_sum,
+        x.fourth_down_att_sum,
+        x.fourth_down_conv_sum,
+        x.fourth_down_failed_sum,
+        x.passing_first_down_sum,
+        x.rushing_first_down_sum,
+        x.third_down_att_sum,
+        x.third_down_conv_sum,
+        x.third_down_failed_sum,
+        x.timeouts_used,
+        x.xpaborted_sum,
+        COALESCE(y.off_penalty_sum,0) AS off_penalty_sum,
+        COALESCE(y.off_penalty_first_down_sum,0) AS off_penalty_first_down_sum,
+        COALESCE(y.off_penalty_yds_sum,0) AS off_penalty_yds_sum,
+        COALESCE(z.def_penalty_sum,0) AS def_penalty_sum,
+        COALESCE(z.def_penalty_first_down_sum,0) AS def_penalty_first_down_sum,
+        COALESCE(z.def_penalty_yds_sum,0) AS def_penalty_yds_sum
+
+FROM play_temp1 x FULL OUTER JOIN play_temp2 y
+    ON x.gsis_id_t2 = y.gsis_id AND x.pos_team = y.penalty_team
+    FULL OUTER JOIN play_temp3 z ON z.penalty_team = x.pos_team AND z.gsis_id = x.gsis_id_t2
+    WHERE pos_team <> 'UNK'
+);
+
+DROP TABLE IF EXISTS loc_by_yr;
+
+CREATE TABLE loc_by_yr AS
+(SELECT gamelocations.locid, year, team AS locteam, roof, surface, lat, lon, zip
+FROM gamelocations, home_locations
+WHERE gamelocations.locid = home_locations.locid
+);
+
+--join play_player, drive, play, game and location
+--need to verify all stats from all tables
+DROP TABLE IF EXISTS game_agg;
+
+CREATE TABLE game_agg AS (
+    SELECT
+    (CASE
+        WHEN home_team = pos_team
+            THEN home_score
+        ELSE away_score
+    END) AS point_pred,
+    penalty_team as team_name,
+    (CASE
+        WHEN day_of_week = 'Monday'
+            THEN 0
+        WHEN day_of_week = 'Tuesday'
+            THEN 1
+        WHEN day_of_week = 'Wednesday'
+            THEN 2
+        WHEN day_of_week = 'Thursday'
+            THEN 3
+        WHEN day_of_week = 'Friday'
+            THEN 4
+        WHEN day_of_week = 'Saturday'
+            THEN 5
+        ELSE 6
+    END) AS day_num,
+    *,
+    (CASE
+        WHEN home_team = pos_team
+            THEN 1
+        ELSE 0
+    END) AS home_yn,
+    (CASE
+        WHEN roof LIKE 'Indoor'
+            THEN 1
+        ELSE 0
+    END) AS indoor,
+    (CASE
+        WHEN surface LIKE 'Grass'
+            THEN 1
+        ELSE 0
+    END) AS grass
+    FROM game t1 INNER JOIN play_game_agg t2 ON t1.gsis_id = t2.gsis_id_t2 AND (t1.home_team = t2.pos_team OR t1.away_team = t2.pos_team)
+        INNER JOIN drive_game_agg t3 ON t2.gsis_id_t2 = t3.gsis_id_t3 AND t2.pos_team = t3.pos_team_t3
+        INNER JOIN play_player_game_agg t4 ON t3.gsis_id_t3 = t4.gsis_id_t4 AND t3.pos_team_t3 = t4.team
+        INNER JOIN loc_by_yr t5 ON t5.locteam = t1.home_team AND t5.year = t1.season_year
+);
+
+DROP TABLE IF EXISTS allowed_game_agg;
+
+CREATE TABLE allowed_game_agg AS (
+SELECT
+t1.gsis_id AS gsis_id2,
+t1.gamekey AS gamekey2,
+t1.team AS team2,
+t2.down_avg AS allowed_down_avg,
+t2.yards_to_go_avg AS allowed_yards_to_go_avg,
+t2.first_down_sum AS allowed_first_down_sum,
+t2.fourth_down_att_sum AS allowed_fourth_down_att_sum,
+t2.fourth_down_conv_sum AS allowed_fourth_down_conv_sum,
+t2.fourth_down_failed_sum AS allowed_fourth_down_failed_sum,
+t2.passing_first_down_sum AS allowed_passing_first_down_sum,
+t2.rushing_first_down_sum AS allowed_rushing_first_down_sum,
+t2.third_down_att_sum AS allowed_third_down_att_sum,
+t2.third_down_conv_sum AS allowed_third_down_conv_sum,
+t2.third_down_failed_sum AS allowed_third_down_failed_sum,
+t2.timeouts_used AS allowed_timeouts_used,
+t2.xpaborted_sum AS allowed_xpaborted_sum,
+t2.off_penalty_sum AS allowed_off_penalty_sum,
+t2.off_penalty_first_down_sum AS allowed_off_penalty_first_down_sum,
+t2.off_penalty_yds_sum AS allowed_off_penalty_yds_sum,
+t2.def_penalty_sum AS allowed_def_penalty_sum,
+t2.def_penalty_first_down_sum AS allowed_def_penalty_first_down_sum,
+t2.def_penalty_yds_sum AS allowed_def_penalty_yds_sum,
+t2.start_field_avg AS allowed_start_field_avg,
+t2.end_field_avg AS allowed_end_field_avg,
+t2.first_downs_tot AS allowed_first_downs_tot,
+t2.results_all AS allowed_results_all,
+t2.yards_gained AS allowed_yards_gained,
+t2.defense_ast AS allowed_defense_ast,
+t2.defense_ffum AS allowed_defense_ffum,
+t2.defense_fgblk AS allowed_defense_fgblk,
+t2.defense_frec AS allowed_defense_frec,
+t2.defense_frec_tds AS allowed_defense_frec_tds,
+t2.defense_frec_yds AS allowed_defense_frec_yds,
+t2.defense_int AS allowed_defense_int,
+t2.defense_int_tds AS allowed_defense_int_tds,
+t2.defense_int_yds AS allowed_defense_int_yds,
+t2.defense_misc_tds AS allowed_defense_misc_tds,
+t2.defense_misc_yds AS allowed_defense_misc_yds,
+t2.defense_pass_def AS allowed_defense_pass_def,
+t2.defense_puntblk AS allowed_defense_puntblk,
+t2.defense_qbhit AS allowed_defense_qbhit,
+t2.defense_safe AS allowed_defense_safe,
+t2.defense_sk AS allowed_defense_sk,
+t2.defense_sk_yds AS allowed_defense_sk_yds,
+t2.defense_tkl AS allowed_defense_tkl,
+t2.defense_tkl_loss AS allowed_defense_tkl_loss,
+t2.defense_tkl_primary AS allowed_defense_tkl_primary,
+t2.defense_xpblk AS allowed_defense_xpblk,
+t2.defense_tds AS allowed_defense_tds,
+t2.fumbles_forced AS allowed_fumbles_forced,
+t2.fumbles_lost AS allowed_fumbles_lost,
+t2.fumbles_notforced AS allowed_fumbles_notforced,
+t2.fumbles_oob AS allowed_fumbles_oob,
+t2.fumbles_rec AS allowed_fumbles_rec,
+t2.fumbles_rec_tds AS allowed_fumbles_rec_tds,
+t2.fumbles_rec_yds AS allowed_fumbles_rec_yds,
+t2.fumbles_tot AS allowed_fumbles_tot,
+t2.kicking_all_yds AS allowed_kicking_all_yds,
+t2.kicking_downed AS allowed_kicking_downed,
+t2.kicking_fga AS allowed_kicking_fga,
+t2.kicking_fgb AS allowed_kicking_fgb,
+t2.kicking_fgm AS allowed_kicking_fgm,
+t2.kicking_fgm_yds AS allowed_kicking_fgm_yds,
+t2.kicking_fgmissed AS allowed_kicking_fgmissed,
+t2.kicking_fgmissed_yds AS allowed_kicking_fgmissed_yds,
+t2.kicking_i20 AS allowed_kicking_i20,
+t2.kicking_rec AS allowed_kicking_rec,
+t2.kicking_tot AS allowed_kicking_tot,
+t2.kicking_touchback AS allowed_kicking_touchback,
+t2.kicking_xpa AS allowed_kicking_xpa,
+t2.kicking_xpb AS allowed_kicking_xpb,
+t2.kicking_xpmade AS allowed_kicking_xpmade,
+t2.kicking_xpmissed AS allowed_kicking_xpmissed,
+t2.kicking_yds AS allowed_kicking_yds,
+t2.kickret_fair AS allowed_kickret_fair,
+t2.kickret_oob AS allowed_kickret_oob,
+t2.kickret_ret AS allowed_kickret_ret,
+t2.kickret_tds AS allowed_kickret_tds,
+t2.kickret_touchback AS allowed_kickret_touchback,
+t2.kickret_yds AS allowed_kickret_yds,
+t2.passing_att AS allowed_passing_att,
+t2.passing_cmp AS allowed_passing_cmp,
+t2.passing_cmp_air_yds AS allowed_passing_cmp_air_yds,
+t2.passing_incmp AS allowed_passing_incmp,
+t2.passing_int AS allowed_passing_int,
+t2.passing_sk AS allowed_passing_sk,
+t2.passing_sk_yds AS allowed_passing_sk_yds,
+t2.passing_tds AS allowed_passing_tds,
+t2.passing_twopta AS allowed_passing_twopta,
+t2.passing_twoptm AS allowed_passing_twoptm,
+t2.passing_twoptmissed AS allowed_passing_twoptmissed,
+t2.passing_yds AS allowed_passing_yds,
+t2.punting_blk AS allowed_punting_blk,
+t2.punting_i20 AS allowed_punting_i20,
+t2.punting_tot AS allowed_punting_tot,
+t2.punting_touchback AS allowed_punting_touchback,
+t2.punting_yds AS allowed_punting_yds,
+t2.puntret_downed AS allowed_puntret_downed,
+t2.puntret_fair AS allowed_puntret_fair,
+t2.puntret_oob AS allowed_puntret_oob,
+t2.puntret_tds AS allowed_puntret_tds,
+t2.puntret_tot AS allowed_puntret_tot,
+t2.puntret_touchback AS allowed_puntret_touchback,
+t2.puntret_yds AS allowed_puntret_yds,
+t2.receiving_rec AS allowed_receiving_rec,
+t2.receiving_tar AS allowed_receiving_tar,
+t2.receiving_tds AS allowed_receiving_tds,
+t2.receiving_twopta AS allowed_receiving_twopta,
+t2.receiving_twoptm AS allowed_receiving_twoptm,
+t2.receiving_twoptmissed AS allowed_receiving_twoptmissed,
+t2.receiving_yac_yds AS allowed_receiving_yac_yds,
+t2.receiving_yds AS allowed_receiving_yds,
+t2.rushing_att AS allowed_rushing_att,
+t2.rushing_loss AS allowed_rushing_loss,
+t2.rushing_loss_yds AS allowed_rushing_loss_yds,
+t2.rushing_tds AS allowed_rushing_tds,
+t2.rushing_twopta AS allowed_rushing_twopta,
+t2.rushing_twoptm AS allowed_rushing_twoptm,
+t2.rushing_twoptmissed AS allowed_rushing_twoptmissed,
+t2.rushing_yds AS allowed_rushing_yds,
+t2.offense_yds AS allowed_offense_yds,
+t2.offense_tds AS allowed_offense_tds,
+t2.tot_turnovers AS allowed_tot_turnovers,
+t2.play_count AS allowed_play_count
+
+FROM game_agg AS t1, game_agg AS t2
+
+WHERE
+t1.gsis_id = t2.gsis_id AND t1.team <> t2.team
+
+);
+
+DROP TABLE IF EXISTS big_game_agg;
+
+CREATE TABLE big_game_agg AS (
+SELECT * FROM
+game_agg AS t1 INNER JOIN allowed_game_agg AS t2 ON t1.gsis_id = t2.gsis_id2 AND t1.team = t2.team2
+ORDER BY t1.team_name, t1.season_year, t1.season_type, t1.week
+);
+
+DROP TABLE IF EXISTS import_tbl;
+
+CREATE TABLE import_tbl AS (
+SELECT
+--key info
+	t1.point_pred,
+	t1.gsis_id,
+	t1.pos_team,
+	t1.gamekey,
+	t1.week,
+	t1.season_year,
+	
+--team info
+	CASE WHEN t1.home_team = t1.pos_team THEN t1.home_score ELSE t1.away_score END AS points_scored,
+	CASE WHEN t1.home_team = t1.pos_team THEN t1.home_score_q1 ELSE t1.away_score_q1 END AS points_scored_q1,
+	CASE WHEN t1.home_team = t1.pos_team THEN t1.home_score_q2 ELSE t1.away_score_q2 END AS points_scored_q2,
+	CASE WHEN t1.home_team = t1.pos_team THEN t1.home_score_q3 ELSE t1.away_score_q3 END AS points_scored_q3,
+	CASE WHEN t1.home_team = t1.pos_team THEN t1.home_score_q4 ELSE t1.away_score_q4 END AS points_scored_q4,
+	CASE WHEN t1.home_team = t1.pos_team THEN t1.home_score_q5 ELSE t1.away_score_q5 END AS points_scored_q5,
+	CASE WHEN t1.home_team = t1.pos_team THEN t1.home_turnovers ELSE t1.away_turnovers END AS turnovers,
+	t1.down_avg,
+	t1.yards_to_go_avg,
+	t1.first_down_sum,
+	t1.fourth_down_att_sum,
+	t1.fourth_down_conv_sum,
+	t1.fourth_down_failed_sum,
+	t1.passing_first_down_sum,
+	t1.rushing_first_down_sum,
+	t1.third_down_att_sum,
+	t1.third_down_conv_sum,
+	t1.third_down_failed_sum,
+	t1.timeouts_used,
+	t1.xpaborted_sum,
+	t1.off_penalty_sum,
+	t1.off_penalty_first_down_sum,
+	t1.off_penalty_yds_sum,
+	t1.def_penalty_sum,
+	t1.def_penalty_first_down_sum,
+	t1.def_penalty_yds_sum,
+	t1.start_field_avg,
+	t1.end_field_avg,
+	t1.first_downs_tot,
+	t1.yards_gained,
+	t1.defense_ast,
+	t1.defense_ffum,
+	t1.defense_fgblk,
+	t1.defense_frec,
+	t1.defense_frec_tds,
+	t1.defense_frec_yds,
+	t1.defense_int,
+	t1.defense_int_tds,
+	t1.defense_int_yds,
+	t1.defense_misc_tds,
+	t1.defense_misc_yds,
+	t1.defense_pass_def,
+	t1.defense_puntblk,
+	t1.defense_qbhit,
+	t1.defense_safe,
+	t1.defense_sk,
+	t1.defense_sk_yds,
+	t1.defense_tkl,
+	t1.defense_tkl_loss,
+	t1.defense_tkl_primary,
+	t1.defense_xpblk,
+	t1.defense_tds,
+	t1.fumbles_forced,
+	t1.fumbles_lost,
+	t1.fumbles_notforced,
+	t1.fumbles_oob,
+	t1.fumbles_rec,
+	t1.fumbles_rec_tds,
+	t1.fumbles_rec_yds,
+	t1.fumbles_tot,
+	t1.kicking_all_yds, --This is all zeros
+	t1.kicking_downed, --This is all zeros
+	t1.kicking_fga,
+	t1.kicking_fgb,
+	t1.kicking_fgm,
+	t1.kicking_fgm_yds,
+	t1.kicking_fgmissed,
+	t1.kicking_fgmissed_yds,
+	t1.kicking_i20,
+	t1.kicking_rec,
+	t1.kicking_tot,
+	t1.kicking_touchback,
+	t1.kicking_xpa,
+	t1.kicking_xpb,
+	t1.kicking_xpmade,
+	t1.kicking_xpmissed,
+	t1.kicking_yds,
+	t1.kickret_fair,
+	t1.kickret_oob,
+	t1.kickret_ret,
+	t1.kickret_tds,
+	t1.kickret_touchback, --This is all zeros
+	t1.kickret_yds,
+	t1.passing_att,
+	t1.passing_cmp,
+	t1.passing_cmp_air_yds,
+	t1.passing_incmp,
+	t1.passing_int,
+	t1.passing_sk,
+	t1.passing_sk_yds,
+	t1.passing_tds,
+	t1.passing_twopta,
+	t1.passing_twoptm,
+	t1.passing_twoptmissed,
+	t1.passing_yds,
+	t1.punting_blk,
+	t1.punting_i20,
+	t1.punting_tot,
+	t1.punting_touchback,
+	t1.punting_yds,
+	t1.puntret_downed, --This is all zeros
+	t1.puntret_fair,
+	t1.puntret_oob, --This is all zeros
+	t1.puntret_tds,
+	t1.puntret_tot,
+	t1.puntret_touchback, --This is all zeros
+	t1.puntret_yds,
+	t1.receiving_rec,
+	t1.receiving_tar,
+	t1.receiving_tds,
+	t1.receiving_twopta,
+	t1.receiving_twoptm,
+	t1.receiving_twoptmissed,
+	t1.receiving_yac_yds,
+	t1.receiving_yds,
+	t1.rushing_att,
+	t1.rushing_loss, --This is all zero
+	t1.rushing_loss_yds, --this is all zero
+	t1.rushing_tds,
+	t1.rushing_twopta,
+	t1.rushing_twoptm,
+	t1.rushing_twoptmissed,
+	t1.rushing_yds,
+	t1.offense_yds,--These numbers are way too high, must be for both teams
+	t1.offense_tds, --These numbers are way too high, must be for both teams
+	t1.tot_turnovers, --DOn't think we need this.
+	t1.play_count, --check these numbers
+
+--other team stats
+	CASE WHEN t1.home_team = t1.pos_team THEN away_score ELSE home_score END AS points_allowed,
+	CASE WHEN t1.home_team = t1.pos_team THEN away_score_q1 ELSE home_score_q1 END AS points_allowed_q1,
+	CASE WHEN t1.home_team = t1.pos_team THEN away_score_q2 ELSE home_score_q2 END AS points_allowed_q2,
+	CASE WHEN t1.home_team = t1.pos_team THEN away_score_q3 ELSE home_score_q3 END AS points_allowed_q3,
+	CASE WHEN t1.home_team = t1.pos_team THEN away_score_q4 ELSE home_score_q4 END AS points_allowed_q4,
+	CASE WHEN t1.home_team = t1.pos_team THEN away_score_q5 ELSE home_score_q5 END AS points_allowed_q5,
+	CASE WHEN t1.home_team = t1.pos_team THEN away_turnovers ELSE home_turnovers END AS turnovers_forced,
+	t1.allowed_down_avg,
+	t1.allowed_yards_to_go_avg,
+t1.allowed_first_down_sum,
+t1.allowed_fourth_down_att_sum,
+t1.allowed_fourth_down_conv_sum,
+t1.allowed_fourth_down_failed_sum,
+t1.allowed_passing_first_down_sum,
+t1.allowed_rushing_first_down_sum,
+t1.allowed_third_down_att_sum,
+t1.allowed_third_down_conv_sum,
+t1.allowed_third_down_failed_sum,
+t1.allowed_timeouts_used,
+t1.allowed_xpaborted_sum,
+t1.allowed_off_penalty_sum,
+t1.allowed_off_penalty_first_down_sum,
+t1.allowed_off_penalty_yds_sum,
+t1.allowed_def_penalty_sum,
+t1.allowed_def_penalty_first_down_sum,
+t1.allowed_def_penalty_yds_sum,
+t1.allowed_start_field_avg,
+t1.allowed_end_field_avg,
+t1.allowed_first_downs_tot,
+t1.allowed_yards_gained,
+t1.allowed_defense_ast,
+t1.allowed_defense_ffum,
+t1.allowed_defense_fgblk,
+t1.allowed_defense_frec,
+t1.allowed_defense_frec_tds,
+t1.allowed_defense_frec_yds,
+t1.allowed_defense_int,
+t1.allowed_defense_int_tds,
+t1.allowed_defense_int_yds,
+t1.allowed_defense_misc_tds,
+t1.allowed_defense_misc_yds,
+t1.allowed_defense_pass_def,
+t1.allowed_defense_puntblk,
+t1.allowed_defense_qbhit,
+t1.allowed_defense_safe,
+t1.allowed_defense_sk,
+t1.allowed_defense_sk_yds,
+t1.allowed_defense_tkl,
+t1.allowed_defense_tkl_loss,
+t1.allowed_defense_tkl_primary,
+t1.allowed_defense_xpblk,
+t1.allowed_defense_tds,
+t1.allowed_fumbles_forced,
+t1.allowed_fumbles_lost,
+t1.allowed_fumbles_notforced,
+t1.allowed_fumbles_oob,
+t1.allowed_fumbles_rec,
+t1.allowed_fumbles_rec_tds,
+t1.allowed_fumbles_rec_yds,
+t1.allowed_fumbles_tot,
+t1.allowed_kicking_all_yds, --This is all zeros
+t1.allowed_kicking_downed, --This is all zeros
+t1.allowed_kicking_fga,
+t1.allowed_kicking_fgb,
+t1.allowed_kicking_fgm,
+t1.allowed_kicking_fgm_yds,
+t1.allowed_kicking_fgmissed,
+t1.allowed_kicking_fgmissed_yds,
+t1.allowed_kicking_i20,
+t1.allowed_kicking_rec,
+t1.allowed_kicking_tot,
+t1.allowed_kicking_touchback,
+t1.allowed_kicking_xpa,
+t1.allowed_kicking_xpb,
+t1.allowed_kicking_xpmade,
+t1.allowed_kicking_xpmissed,
+t1.allowed_kicking_yds,
+t1.allowed_kickret_fair,
+t1.allowed_kickret_oob,
+t1.allowed_kickret_ret,
+t1.allowed_kickret_tds,
+t1.allowed_kickret_touchback, --This is all zeros
+t1.allowed_kickret_yds,
+t1.allowed_passing_att,
+t1.allowed_passing_cmp,
+t1.allowed_passing_cmp_air_yds,
+t1.allowed_passing_incmp,
+t1.allowed_passing_int,
+t1.allowed_passing_sk,
+t1.allowed_passing_sk_yds,
+t1.allowed_passing_tds,
+t1.allowed_passing_twopta,
+t1.allowed_passing_twoptm,
+t1.allowed_passing_twoptmissed,
+t1.allowed_passing_yds,
+t1.allowed_punting_blk,
+t1.allowed_punting_i20,
+t1.allowed_punting_tot,
+t1.allowed_punting_touchback,
+t1.allowed_punting_yds,
+t1.allowed_puntret_downed, --This is all zeros
+t1.allowed_puntret_fair,
+t1.allowed_puntret_oob, --This is all zeros
+t1.allowed_puntret_tds,
+t1.allowed_puntret_tot,
+t1.allowed_puntret_touchback, --This is all zeros
+t1.allowed_puntret_yds,
+t1.allowed_receiving_rec,
+t1.allowed_receiving_tar,
+t1.allowed_receiving_tds,
+t1.allowed_receiving_twopta,
+t1.allowed_receiving_twoptm,
+t1.allowed_receiving_twoptmissed,
+t1.allowed_receiving_yac_yds,
+t1.allowed_receiving_yds,
+t1.allowed_rushing_att,
+t1.allowed_rushing_loss, --This is all zero
+t1.allowed_rushing_loss_yds, --this is all zero
+t1.allowed_rushing_tds,
+t1.allowed_rushing_twopta,
+t1.allowed_rushing_twoptm,
+t1.allowed_rushing_twoptmissed,
+t1.allowed_rushing_yds,
+t1.allowed_offense_yds,--These numbers are way too high, must be for both teams
+t1.allowed_offense_tds, --These numbers are way too high, must be for both teams
+t1.allowed_tot_turnovers, --DOn't think we need this.
+t1.allowed_play_count, --check these numbers
+	
+--static info
+	t1.day_num,
+	t1.home_yn,
+	t1.start_time,
+	"t2"."Temperature",
+	"t2"."RelHumidity",
+	"t2"."Windspeed",
+	"t2"."WindChill",
+	 "t2"."OULine",
+	 "t2"."OUActual",
+	"t2"."InOut",
+	"t2"."GrassTurf"
+FROM
+	big_game_agg AS t1, spreadweather AS t2
+
+WHERE
+	LEFT(t1.gsis_id,8) = "t2"."Date" AND (t1.pos_team = "t2"."HOME" OR t1.pos_team = "t2"."Away")
+);
